@@ -1,7 +1,14 @@
+import logging
 import os
 
 from flask import abort, Flask, jsonify, request
 
+#
+# App setup & boilerplate
+#
+
+logger = logging.getLogger()
+logger.setLevel(logging.DEBUG)
 app = Flask(__name__)
 
 
