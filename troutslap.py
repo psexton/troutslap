@@ -34,19 +34,35 @@ def is_request_valid(body, timestamp, signature):
     if hmac.compare_digest(computed_signature, signature):
         return True
     else:
-        logger.debug(f"Signature verification failed. basestring={basestring} received={signature}, computed={computed_signature}")
+        logger.debug(
+            f"Signature verification failed. basestring={basestring} received={signature}, computed={computed_signature}")
         return False
+
+
+def mass_at_mention(text):
+    # slack encoded the three special @-mentions with a ! not a @
+    return "!here" in text or "!channel" in text or "!everyone" in text
 
 
 @app.route('/hook', methods=['POST'])
 def slap():
     raw_body = request.get_data()
+    form_data = request.form
     if not is_request_valid(body=raw_body, timestamp=request.headers['X-Slack-Request-Timestamp'],
                             signature=request.headers['X-Slack-Signature']):
         logging.warning('invalid request')
         abort(400)
 
-    return jsonify(
-        response_type='in_channel',
-        text='Happy slapping!',
-    )
+    # Check if the user used @here, @channel, or @everyone
+    # Chastise them and suppress the @-ing from the channel
+    if mass_at_mention(form_data['text']):
+        logging.info("mass slap attempted")
+        return jsonify(
+            response_type="ephemeral",
+            text="You don't stand a chance fighting that many people."
+        )
+    else:
+        return jsonify(
+            response_type='in_channel',
+            text='Happy slapping!',
+        )
