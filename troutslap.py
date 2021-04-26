@@ -33,9 +33,16 @@ def slap():
         logging.warning('invalid request')
         abort(400)
 
+    # Check for help invocation
+    if data['text'] == "help":
+        logging.info("help requested")
+        return jsonify(
+            response_type="ephemeral",
+            text="Example usages: `/slap @larry`, `/slap @curly @moe`"
+        )
     # Check if the user used @here, @channel, or @everyone
     # Chastise them and suppress the @-ing from the channel
-    if mass_at_mention(data['text']):
+    elif mass_at_mention(data['text']):
         logging.info("mass slap attempted")
         return jsonify(
             response_type="ephemeral",
