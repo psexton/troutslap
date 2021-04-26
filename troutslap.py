@@ -5,6 +5,11 @@ from flask import abort, Flask, jsonify, request
 app = Flask(__name__)
 
 
+@app.route('/status', methods=['GET'])
+def status():
+    return jsonify(status='OK')
+
+
 def is_request_valid(request):
     is_token_valid = request.form['token'] == os.environ['SLACK_VERIFICATION_TOKEN']
     is_team_id_valid = request.form['team_id'] == os.environ['SLACK_TEAM_ID']
