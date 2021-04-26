@@ -1,3 +1,5 @@
+import hashlib
+import hmac
 import logging
 import os
 
@@ -17,16 +19,31 @@ def status():
     return jsonify(status='OK')
 
 
-def is_request_valid(request):
-    is_token_valid = request.form['token'] == os.environ['SLACK_VERIFICATION_TOKEN']
-    is_team_id_valid = request.form['team_id'] == os.environ['SLACK_TEAM_ID']
+def is_request_valid(body, timestamp, signature):
+    # Decode the bytes in the raw request body, assemble the base string, and re-encode as bytes
+    body_str = body.decode('utf-8')
+    basestring = f"v0:{timestamp}:{body_str}".encode('utf-8')
 
-    return is_token_valid and is_team_id_valid
+    # encode the signing secret as bytes too
+    signing_secret = bytes(os.environ['SLACK_SIGNING_SECRET'], 'utf-8')
+
+    # Compute the HMAC signature
+    computed_signature = 'v0=' + hmac.new(signing_secret, basestring, hashlib.sha256).hexdigest()
+
+    # Compare it to what we received with the request
+    if hmac.compare_digest(computed_signature, signature):
+        return True
+    else:
+        logger.debug(f"Signature verification failed. basestring={basestring} received={signature}, computed={computed_signature}")
+        return False
 
 
 @app.route('/hook', methods=['POST'])
-def hello_there():
-    if not is_request_valid(request):
+def slap():
+    raw_body = request.get_data()
+    if not is_request_valid(body=raw_body, timestamp=request.headers['X-Slack-Request-Timestamp'],
+                            signature=request.headers['X-Slack-Signature']):
+        logging.warning('invalid request')
         abort(400)
 
     return jsonify(
