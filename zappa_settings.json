@@ -1,0 +1,26 @@
+{
+  "prod": {
+    "app_function": "troutslap.app",
+    "aws_region": "us-east-1",
+    "exclude": [
+      "__pycache__",
+      ".git/*",
+      ".gitignore",
+      ".python-version",
+      "LICENSE",
+      "README.md",
+      "requirements.txt",
+      "zappa_settings.json",
+      "avatar.jpg",
+      ".idea"
+    ],
+    "keep_warm": true,
+    "keep_warm_expression": "rate(5 minutes)",
+    "memory_size": 128,
+    "profile_name": "default",
+    "project_name": "troutslap",
+    "runtime": "python3.8",
+    "s3_bucket": "psexton-slackbot-troutslap",
+    "timeout_seconds": 30
+  }
+}
