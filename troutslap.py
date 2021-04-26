@@ -20,6 +20,44 @@ def status():
     return jsonify(status='OK')
 
 
+@app.route('/hook', methods=['POST'])
+def slap():
+    raw_body = request.get_data()
+    data = request.form
+    if not is_request_valid(body=raw_body, timestamp=request.headers['X-Slack-Request-Timestamp'],
+                            signature=request.headers['X-Slack-Signature']):
+        logging.warning('invalid request')
+        abort(400)
+
+    # Check if the user used @here, @channel, or @everyone
+    # Chastise them and suppress the @-ing from the channel
+    if mass_at_mention(data['text']):
+        logging.info("mass slap attempted")
+        return jsonify(
+            response_type="ephemeral",
+            text="You don't stand a chance fighting that many people."
+        )
+    else:
+        # parse out who slapped and who is getting slapped
+        initiator = data['user_id']
+        involved = involved_users(data)
+
+        if len(involved) == 1:
+            # if they're alone, handle that special case too
+            logging.info("self slap attempted")
+            return jsonify(
+                response_type='ephemeral',
+                text="No one else is around. You slap yourself. The fish wins."
+            )
+        else:
+            # otherwise, handle the normal case
+            logging.info("queuing normal slap")
+            return jsonify(
+                response_type='in_channel',
+                text='Happy slapping!'
+            )
+
+
 def is_request_valid(body, timestamp, signature):
     # Decode the bytes in the raw request body, assemble the base string, and re-encode as bytes
     body_str = body.decode('utf-8')
@@ -64,39 +102,3 @@ def involved_users(form):
     return involved
 
 
-@app.route('/hook', methods=['POST'])
-def slap():
-    raw_body = request.get_data()
-    data = request.form
-    if not is_request_valid(body=raw_body, timestamp=request.headers['X-Slack-Request-Timestamp'],
-                            signature=request.headers['X-Slack-Signature']):
-        logging.warning('invalid request')
-        abort(400)
-
-    # Check if the user used @here, @channel, or @everyone
-    # Chastise them and suppress the @-ing from the channel
-    if mass_at_mention(data['text']):
-        logging.info("mass slap attempted")
-        return jsonify(
-            response_type="ephemeral",
-            text="You don't stand a chance fighting that many people."
-        )
-    else:
-        # parse out who slapped and who is getting slapped
-        initiator = data['user_id']
-        involved = involved_users(data)
-
-        if len(involved) == 1:
-            # if they're alone, handle that special case too
-            logging.info("self slap attempted")
-            return jsonify(
-                response_type='ephemeral',
-                text="No one else is around. You slap yourself. The fish wins."
-            )
-        else:
-            # otherwise, handle the normal case
-            logging.info("queuing normal slap")
-            return jsonify(
-                response_type='in_channel',
-                text='Happy slapping!'
-            )
