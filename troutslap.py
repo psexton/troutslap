@@ -2,9 +2,12 @@ import hashlib
 import hmac
 import logging
 import os
+import random
 import re
+from time import sleep
 
 from flask import abort, Flask, jsonify, request
+import requests
 
 #
 # App setup & boilerplate
@@ -52,6 +55,8 @@ def slap():
         else:
             # otherwise, handle the normal case
             logging.info("queuing normal slap")
+            give_em_the_slaps(data['channel_id'], initiator, involved)
+
             return jsonify(
                 response_type='in_channel',
                 text='Happy slapping!'
@@ -102,3 +107,45 @@ def involved_users(form):
     return involved
 
 
+def give_em_the_slaps(channel_id, initiator, players):
+    # Get the content we'll be using
+    messages = write_messages(initiator, players)
+
+    # Send the content to slack
+    for message in messages:
+        response = {'channel': channel_id, 'text': message}
+        logging.debug(f"posting {response['text']}")
+        response = requests.post("https://slack.com/api/chat.postMessage",
+                                 json=response,
+                                 headers={'Authorization': 'Bearer {}'.format(os.environ['SLACK_OAUTH_TOKEN'])})
+        logging.debug(f"response.status_code={response.status_code}")
+
+
+def write_messages(initiator, players):
+    MIN_SLAPS = 1
+    MAX_SLAPS = 9
+    FISH_NAMES = ["trout", "pair of sardines", "salmon", "barramundi", "sturgeon", "ocean sunfish", "shark", "guppy"]
+
+    messages = []
+
+    # Slap a few times
+    num_slaps = random.randint(MIN_SLAPS, MAX_SLAPS)
+    slapper = initiator  # The first slapper is always the initiator
+    for i in range(num_slaps):
+        # slappee can't be the slapper
+        possible_slapees = [player for player in players if player != slapper]
+        slappee = random.choice(possible_slapees)
+        fish = random.choice(FISH_NAMES)
+        message = f'{encode_name(slapper)} slaps {encode_name(slappee)} with a {fish}'
+        messages.append(message)
+        slapper = slappee  # The slappee becomes the slapper in the next round
+
+    # Pick a winner
+    winner = random.choice(players)
+    final_message = f'{encode_name(winner)} wins!'
+    messages.append(final_message)
+    return messages
+
+
+def encode_name(user_id):
+    return f'<@{user_id}>'
