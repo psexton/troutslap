@@ -111,6 +111,13 @@ def involved_users(form):
 
 @task  # run this async in the background
 def give_em_the_slaps(channel_id, initiator, players):
+    INITIAL_PAUSE_DURATION = 0.5
+    PAUSE_DURATION = 1
+
+    # Sometimes, our first post beats the user's post to visibility in the channel, and that looks weird
+    # So wait a little bit
+    sleep(INITIAL_PAUSE_DURATION)
+
     # Get the content we'll be using
     messages = write_messages(initiator, players)
 
@@ -122,6 +129,7 @@ def give_em_the_slaps(channel_id, initiator, players):
                                  json=response,
                                  headers={'Authorization': 'Bearer {}'.format(os.environ['SLACK_OAUTH_TOKEN'])})
         logging.debug(f"response.status_code={response.status_code}")
+        sleep(PAUSE_DURATION)
 
 
 def write_messages(initiator, players):
