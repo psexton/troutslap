@@ -2,6 +2,7 @@ import hashlib
 import hmac
 import logging
 import os
+import re
 
 from flask import abort, Flask, jsonify, request
 
@@ -44,10 +45,29 @@ def mass_at_mention(text):
     return "!here" in text or "!channel" in text or "!everyone" in text
 
 
+def involved_users(form):
+    # our regex is <@(\w+)\|?\w+?>
+    # This will match both <@XXX> and <@XXX|YYY>, but throws away
+    # the vertical bar and the portion after it, if found
+    # See https://api.slack.com/changelog/2017-09-the-one-about-usernames
+    pattern = "<@(\\w+)\\|?\\w+?>"
+    mentioned = re.findall(pattern, form['text'])
+
+    # also include the person who sent the command
+    initiator = form['user_id']
+    involved = mentioned + [initiator]
+
+    # dedup in case they mentioned themselves
+    temp_set = set(involved)
+    involved = list(temp_set)
+
+    return involved
+
+
 @app.route('/hook', methods=['POST'])
 def slap():
     raw_body = request.get_data()
-    form_data = request.form
+    data = request.form
     if not is_request_valid(body=raw_body, timestamp=request.headers['X-Slack-Request-Timestamp'],
                             signature=request.headers['X-Slack-Signature']):
         logging.warning('invalid request')
@@ -55,14 +75,28 @@ def slap():
 
     # Check if the user used @here, @channel, or @everyone
     # Chastise them and suppress the @-ing from the channel
-    if mass_at_mention(form_data['text']):
+    if mass_at_mention(data['text']):
         logging.info("mass slap attempted")
         return jsonify(
             response_type="ephemeral",
             text="You don't stand a chance fighting that many people."
         )
     else:
-        return jsonify(
-            response_type='in_channel',
-            text='Happy slapping!',
-        )
+        # parse out who slapped and who is getting slapped
+        initiator = data['user_id']
+        involved = involved_users(data)
+
+        if len(involved) == 1:
+            # if they're alone, handle that special case too
+            logging.info("self slap attempted")
+            return jsonify(
+                response_type='ephemeral',
+                text="No one else is around. You slap yourself. The fish wins."
+            )
+        else:
+            # otherwise, handle the normal case
+            logging.info("queuing normal slap")
+            return jsonify(
+                response_type='in_channel',
+                text='Happy slapping!'
+            )
