@@ -8,6 +8,7 @@ from time import sleep
 
 from flask import abort, Flask, jsonify, request
 import requests
+from zappa.asynchronous import task
 
 #
 # App setup & boilerplate
@@ -57,10 +58,11 @@ def slap():
             logging.info("queuing normal slap")
             give_em_the_slaps(data['channel_id'], initiator, involved)
 
-            return jsonify(
-                response_type='in_channel',
-                text='Happy slapping!'
-            )
+            # return immediately with empty response
+            # Need to include the "in_channel" response_type so that the user's
+            # command invocation is shown to the channel.
+            # See <https://api.slack.com/interactivity/slash-commands#best_practices>
+            return jsonify(response_type='in_channel')
 
 
 def is_request_valid(body, timestamp, signature):
@@ -107,6 +109,7 @@ def involved_users(form):
     return involved
 
 
+@task  # run this async in the background
 def give_em_the_slaps(channel_id, initiator, players):
     # Get the content we'll be using
     messages = write_messages(initiator, players)
