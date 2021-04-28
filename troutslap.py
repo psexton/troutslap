@@ -30,7 +30,7 @@ def status():
 def slap():
     raw_body = request.get_data()
     data = request.form
-    logging.debug(f"data=${data}")
+    logging.debug(f"data={data}")
     if not is_request_valid(body=raw_body, timestamp=request.headers['X-Slack-Request-Timestamp'],
                             signature=request.headers['X-Slack-Signature']):
         logging.warning('invalid request')
@@ -55,8 +55,8 @@ def slap():
         # parse out who slapped and who is getting slapped
         initiator = data['user_id']
         involved = involved_users(data)
-        logging.debug(f"initiator=${initiator}")
-        logging.debug(f"involved=${involved}")
+        logging.debug(f"initiator={initiator}")
+        logging.debug(f"involved={involved}")
 
         if len(involved) == 1:
             # if they're alone, handle that special case too
@@ -142,7 +142,6 @@ def give_em_the_slaps(channel_id, initiator, players):
                                  json=response,
                                  headers={'Authorization': 'Bearer {}'.format(os.environ['SLACK_OAUTH_TOKEN'])})
         logging.debug(f"response.status_code={response.status_code}")
-        logging.debug(f"response.body={response.body}")
         if not DEBUG_MODE:
             sleep(PAUSE_DURATION)
 
