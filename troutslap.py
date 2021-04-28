@@ -103,9 +103,8 @@ def mass_at_mention(text):
 
 
 def involved_users(form):
-    # our regex is <@([^|>]+)
-    # This will match both <@XXX> and <@XXX|YYY>, but throws away
-    # the vertical bar and the portion after it, if found
+    # This regex will match either <@XXX> or <@XXX|YYY>, and return just the XXX part.
+    # We don't know what either string may contain, so match from "<@" to either "|" or ">".
     # See https://api.slack.com/changelog/2017-09-the-one-about-usernames
     pattern = "<@([^|>]+)"
     mentioned = re.findall(pattern, form['text'])
