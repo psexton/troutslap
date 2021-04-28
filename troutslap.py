@@ -103,18 +103,18 @@ def mass_at_mention(text):
 
 
 def involved_users(form):
-    # our regex is <@(\w+)\|?[^>]+?>
+    # our regex is <@([^|>]+)
     # This will match both <@XXX> and <@XXX|YYY>, but throws away
     # the vertical bar and the portion after it, if found
     # See https://api.slack.com/changelog/2017-09-the-one-about-usernames
-    pattern = "<@(\\w+)\\|?[^>]+?>"
+    pattern = "<@([^|>]+)"
     mentioned = re.findall(pattern, form['text'])
 
     # also include the person who sent the command
     initiator = form['user_id']
     involved = mentioned + [initiator]
 
-    # dedup in case they mentioned themselves
+    # dedup in case they mentioned themselves, or mentioned someone more than once
     temp_set = set(involved)
     involved = list(temp_set)
 
@@ -142,6 +142,7 @@ def give_em_the_slaps(channel_id, initiator, players):
                                  json=response,
                                  headers={'Authorization': 'Bearer {}'.format(os.environ['SLACK_OAUTH_TOKEN'])})
         logging.debug(f"response.status_code={response.status_code}")
+        logging.debug(f"response.body={response.body}")
         if not DEBUG_MODE:
             sleep(PAUSE_DURATION)
 
