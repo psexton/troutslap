@@ -130,3 +130,7 @@ dmypy.json
 
 # IntelliJ
 .idea/
+
+# AWS secrets
+zappa_settings.json
+iam_policy.json
