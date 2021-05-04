@@ -1,7 +1,7 @@
+import boto3
 import hashlib
 import hmac
 import logging
-import os
 import random
 import re
 from time import sleep
@@ -13,6 +13,12 @@ from zappa.asynchronous import task
 #
 # App setup & boilerplate
 #
+
+# pull configs and secrets from aws param store
+# do this once at global level hopefully
+ssm = boto3.client('ssm')
+oauth_token = ssm.get_parameter(Name='/slackapp/troutslap/oauth_token', WithDecryption=True)['Parameter']['Value']
+signing_secret = ssm.get_parameter(Name='/slackapp/troutslap/signing_secret', WithDecryption=True)['Parameter']['Value']
 
 DEBUG_MODE = True
 
@@ -83,10 +89,10 @@ def is_request_valid(body, timestamp, signature):
     basestring = f"v0:{timestamp}:{body_str}".encode('utf-8')
 
     # encode the signing secret as bytes too
-    signing_secret = bytes(os.environ['SLACK_SIGNING_SECRET'], 'utf-8')
+    signing_secret_bytes = bytes(signing_secret, 'utf-8')
 
     # Compute the HMAC signature
-    computed_signature = 'v0=' + hmac.new(signing_secret, basestring, hashlib.sha256).hexdigest()
+    computed_signature = 'v0=' + hmac.new(signing_secret_bytes, basestring, hashlib.sha256).hexdigest()
 
     # Compare it to what we received with the request
     if hmac.compare_digest(computed_signature, signature):
@@ -139,7 +145,7 @@ def give_em_the_slaps(channel_id, initiator, players):
         logging.debug(f"posting {response['text']}")
         response = requests.post("https://slack.com/api/chat.postMessage",
                                  json=response,
-                                 headers={'Authorization': 'Bearer {}'.format(os.environ['SLACK_OAUTH_TOKEN'])})
+                                 headers={'Authorization': f"Bearer {oauth_token}"})
         logging.debug(f"response.status_code={response.status_code}")
         if not DEBUG_MODE:
             sleep(PAUSE_DURATION)
