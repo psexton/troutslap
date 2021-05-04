@@ -11,7 +11,8 @@
       "LICENSE",
       "README.md",
       "requirements.txt",
-      "*.json",
+      "iam_policy.json",
+      "zappa_settings.json",
       "avatar.jpg"
     ],
     "manage_roles": false,
