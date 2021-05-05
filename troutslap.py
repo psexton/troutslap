@@ -20,8 +20,9 @@ from zappa.asynchronous import task
 ssm = boto3.client('ssm')
 client_id = ssm.get_parameter(Name='/slackapp/troutslap/client_id', WithDecryption=False)['Parameter']['Value']
 client_secret = ssm.get_parameter(Name='/slackapp/troutslap/client_secret', WithDecryption=True)['Parameter']['Value']
-oauth_token = ssm.get_parameter(Name='/slackapp/troutslap/oauth_token', WithDecryption=True)['Parameter']['Value']
 signing_secret = ssm.get_parameter(Name='/slackapp/troutslap/signing_secret', WithDecryption=True)['Parameter']['Value']
+dev_team_id = ssm.get_parameter(Name='/slackapp/troutslap/dev/team_id', WithDecryption=False)['Parameter']['Value']
+dev_oauth_token = ssm.get_parameter(Name='/slackapp/troutslap/dev/oauth_token', WithDecryption=True)['Parameter']['Value']
 
 DEBUG_MODE = True
 
@@ -174,7 +175,7 @@ def give_em_the_slaps(channel_id, initiator, players):
         logging.debug(f"posting {response['text']}")
         response = requests.post("https://slack.com/api/chat.postMessage",
                                  json=response,
-                                 headers={'Authorization': f"Bearer {oauth_token}"})
+                                 headers={'Authorization': f"Bearer {dev_oauth_token}"})
         logging.debug(f"response.status_code={response.status_code}")
         if not DEBUG_MODE:
             sleep(PAUSE_DURATION)
