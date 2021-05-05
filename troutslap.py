@@ -1,12 +1,13 @@
 import boto3
 import hashlib
 import hmac
+import json
 import logging
 import random
 import re
 from time import sleep
 
-from flask import abort, Flask, jsonify, request
+from flask import abort, Flask, jsonify, request, redirect
 import requests
 from zappa.asynchronous import task
 
@@ -17,6 +18,8 @@ from zappa.asynchronous import task
 # pull configs and secrets from aws param store
 # do this once at global level hopefully
 ssm = boto3.client('ssm')
+client_id = ssm.get_parameter(Name='/slackapp/troutslap/client_id', WithDecryption=False)['Parameter']['Value']
+client_secret = ssm.get_parameter(Name='/slackapp/troutslap/client_secret', WithDecryption=True)['Parameter']['Value']
 oauth_token = ssm.get_parameter(Name='/slackapp/troutslap/oauth_token', WithDecryption=True)['Parameter']['Value']
 signing_secret = ssm.get_parameter(Name='/slackapp/troutslap/signing_secret', WithDecryption=True)['Parameter']['Value']
 
@@ -30,6 +33,32 @@ app = Flask(__name__)
 @app.route('/status', methods=['GET'])
 def status():
     return jsonify(status='OK')
+
+
+# Simple route for redirecting the user to slack to install this app in a workspace
+@app.route('/install')
+def install():
+    scopes = "commands,chat:write,chat:write.public"
+    return redirect(f"https://slack.com/oauth/v2/authorize?scope={scopes}&client_id={client_id}")
+
+
+# Callback from install to exchange secret code for oauth token
+@app.route('/oauth2_redirect')
+def authorize():
+    form_data = {"client_id": client_id, "client_secret": client_secret, "code": request.args.get('code')}
+    response = requests.post('https://slack.com/api/oauth.v2.access', data=form_data)
+    response_body = json.loads(response.text)
+    logging.debug(response_body)
+    if response_body["ok"]:
+        # if successful, store in DB and return happy response
+        # access_token
+        # team
+        #   id
+        #   name
+        return jsonify(status='OK', team_id=response_body["team"]["id"], team_name=response_body["team"]["name"])
+    else:
+        # if not successful, return unhappy response
+        return response_body, response.status_code
 
 
 @app.route('/hook', methods=['POST'])
