@@ -23,6 +23,7 @@ client_secret = ssm.get_parameter(Name='/slackapp/troutslap/client_secret', With
 signing_secret = ssm.get_parameter(Name='/slackapp/troutslap/signing_secret', WithDecryption=True)['Parameter']['Value']
 dev_team_id = ssm.get_parameter(Name='/slackapp/troutslap/dev/team_id', WithDecryption=False)['Parameter']['Value']
 dev_oauth_token = ssm.get_parameter(Name='/slackapp/troutslap/dev/oauth_token', WithDecryption=True)['Parameter']['Value']
+installations = boto3.resource('dynamodb').Table('troutslap-installations')
 
 DEBUG_MODE = True
 
@@ -213,14 +214,31 @@ def encode_name(user_id):
     return f'<@{user_id}>'
 
 
+# write a team's auth info out to dynamodb
 def store_token(team_id, team_name, token) -> None:
     logging.debug(f"storing token for team_id={team_id}, team_name={team_name}")
-    # @TODO write to dynamodb
+    # this will add a new item or overwrite an existing item
+    installations.put_item(
+        Item={
+            'team_id': team_id,
+            'name': team_name,
+            'token': token
+        }
+    )
 
 
+# read in a team's auth info from dynamodb
 def load_token(team_id) -> str:
-    # @TODO read from dynamodb
-    if team_id == dev_team_id:
+    response = installations.get_item(
+        Key={
+            'team_id': team_id
+        }
+    )
+    if "Item" in response:
+        token = response['Item']['token']
+        return token
+    elif team_id == dev_team_id:
+        logging.debug(f"falling back on dev_oauth_token")
         return dev_oauth_token
     else:
         raise RuntimeError(f"No token found for team_id={team_id}")
