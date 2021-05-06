@@ -222,8 +222,8 @@ def store_token(team_id, team_name, token) -> None:
     installations.put_item(
         Item={
             'team_id': team_id,
-            'name': team_name,
-            'token': token
+            'team_name': team_name,
+            'access_token': token
         }
     )
 
@@ -236,7 +236,7 @@ def load_token(team_id) -> str:
         }
     )
     if "Item" in response:
-        token = response['Item']['token']
+        token = response['Item']['access_token']
         return token
     elif team_id == dev_team_id:
         logging.debug(f"falling back on dev_oauth_token")
