@@ -3,6 +3,7 @@ import hashlib
 import hmac
 import json
 import logging
+import os
 import random
 import re
 from time import sleep
@@ -25,16 +26,16 @@ dev_team_id = ssm.get_parameter(Name='/slackapp/troutslap/dev/team_id', WithDecr
 dev_oauth_token = ssm.get_parameter(Name='/slackapp/troutslap/dev/oauth_token', WithDecryption=True)['Parameter']['Value']
 installations = boto3.resource('dynamodb').Table('troutslap-installations')
 
-DEBUG_MODE = True
+DEBUG_MODE = os.getenv('TROUTSLAP_DEBUG', 'False').lower() in ('true', '1')
 
 logger = logging.getLogger()
-logger.setLevel(logging.DEBUG if DEBUG_MODE else logging.info)
+logger.setLevel(logging.DEBUG if DEBUG_MODE else logging.INFO)
 app = Flask(__name__)
 
 
 @app.route('/status', methods=['GET'])
 def status():
-    return jsonify(status='OK')
+    return jsonify(status='OK', debug_mode=DEBUG_MODE)
 
 
 # Simple route for redirecting the user to slack to install this app in a workspace
