@@ -22,8 +22,7 @@ ssm = boto3.client('ssm')
 client_id = ssm.get_parameter(Name='/slackapp/troutslap/client_id', WithDecryption=False)['Parameter']['Value']
 client_secret = ssm.get_parameter(Name='/slackapp/troutslap/client_secret', WithDecryption=True)['Parameter']['Value']
 signing_secret = ssm.get_parameter(Name='/slackapp/troutslap/signing_secret', WithDecryption=True)['Parameter']['Value']
-dev_team_id = ssm.get_parameter(Name='/slackapp/troutslap/dev/team_id', WithDecryption=False)['Parameter']['Value']
-dev_oauth_token = ssm.get_parameter(Name='/slackapp/troutslap/dev/oauth_token', WithDecryption=True)['Parameter']['Value']
+# initialize dynamodb table
 installations = boto3.resource('dynamodb').Table('troutslap-installations')
 
 DEBUG_MODE = os.getenv('TROUTSLAP_DEBUG', 'False').lower() in ('true', '1')
@@ -238,8 +237,5 @@ def load_token(team_id) -> str:
     if "Item" in response:
         token = response['Item']['access_token']
         return token
-    elif team_id == dev_team_id:
-        logging.debug(f"falling back on dev_oauth_token")
-        return dev_oauth_token
     else:
         raise RuntimeError(f"No token found for team_id={team_id}")
