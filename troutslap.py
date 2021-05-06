@@ -77,7 +77,7 @@ def slap():
         logging.info("help requested")
         return jsonify(
             response_type="ephemeral",
-            text="Example usages: `/slap @larry`, `/slap @curly @moe`"
+            text="@ mention one or more other users or bots to engage them in combat.\nExample usages: `/slap @larry`, `/slap @curly @moe`"
         )
     # Check if the user used @here, @channel, or @everyone
     # Chastise them and suppress the @-ing from the channel
