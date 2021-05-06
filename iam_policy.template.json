@@ -15,12 +15,17 @@
       "Sid": "VisualEditor1",
       "Effect": "Allow",
       "Action": [
+        "dynamodb:PutItem",
         "ssm:GetParameterHistory",
+        "dynamodb:GetItem",
         "ssm:GetParametersByPath",
         "ssm:GetParameters",
         "ssm:GetParameter"
       ],
-      "Resource": "arn:aws:ssm:$AWS_REGION:$AWS_ACCOUNT_ID:parameter/slackapp/troutslap/*"
+      "Resource": [
+        "arn:aws:dynamodb:$AWS_REGION:$AWS_ACCOUNT_ID:table/troutslap-installations",
+        "arn:aws:ssm:$AWS_REGION:$AWS_ACCOUNT_ID:parameter/slackapp/troutslap/*"
+      ]
     },
     {
       "Sid": "VisualEditor2",
