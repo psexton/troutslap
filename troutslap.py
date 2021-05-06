@@ -49,14 +49,13 @@ def authorize():
     form_data = {"client_id": client_id, "client_secret": client_secret, "code": request.args.get('code')}
     response = requests.post('https://slack.com/api/oauth.v2.access', data=form_data)
     response_body = json.loads(response.text)
-    logging.debug(response_body)
     if response_body["ok"]:
         # if successful, store in DB and return happy response
-        # access_token
-        # team
-        #   id
-        #   name
-        return jsonify(status='OK', team_id=response_body["team"]["id"], team_name=response_body["team"]["name"])
+        team_id = response_body["team"]["id"]
+        team_name = response_body["team"]["name"]
+        token = response_body["access_token"]
+        store_token(team_id, team_name, token)
+        return jsonify(status='OK', team_id=team_id, team_name=team_name)
     else:
         # if not successful, return unhappy response
         return response_body, response.status_code
@@ -104,7 +103,7 @@ def slap():
         else:
             # otherwise, handle the normal case
             logging.info("queuing normal slap")
-            give_em_the_slaps(data['channel_id'], initiator, involved)
+            give_em_the_slaps(data['team_id'], data['channel_id'], initiator, involved)
 
             # return immediately with empty response
             # Need to include the "in_channel" response_type so that the user's
@@ -157,7 +156,7 @@ def involved_users(form):
 
 
 @task  # run this async in the background
-def give_em_the_slaps(channel_id, initiator, players):
+def give_em_the_slaps(team_id, channel_id, initiator, players):
     INITIAL_PAUSE_DURATION = 0.5
     PAUSE_DURATION = 1
 
@@ -169,13 +168,16 @@ def give_em_the_slaps(channel_id, initiator, players):
     # Get the content we'll be using
     messages = write_messages(initiator, players)
 
+    # Look up the token for this team
+    oauth_token = load_token(team_id)
+
     # Send the content to slack
     for message in messages:
         response = {'channel': channel_id, 'text': message}
         logging.debug(f"posting {response['text']}")
         response = requests.post("https://slack.com/api/chat.postMessage",
                                  json=response,
-                                 headers={'Authorization': f"Bearer {dev_oauth_token}"})
+                                 headers={'Authorization': f"Bearer {oauth_token}"})
         logging.debug(f"response.status_code={response.status_code}")
         if not DEBUG_MODE:
             sleep(PAUSE_DURATION)
@@ -209,3 +211,16 @@ def write_messages(initiator, players):
 
 def encode_name(user_id):
     return f'<@{user_id}>'
+
+
+def store_token(team_id, team_name, token) -> None:
+    logging.debug(f"storing token for team_id={team_id}, team_name={team_name}")
+    # @TODO write to dynamodb
+
+
+def load_token(team_id) -> str:
+    # @TODO read from dynamodb
+    if team_id == dev_team_id:
+        return dev_oauth_token
+    else:
+        raise RuntimeError(f"No token found for team_id={team_id}")
