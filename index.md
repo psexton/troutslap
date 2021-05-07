@@ -1,37 +1,25 @@
-## Welcome to GitHub Pages
+## Trout Slap
 
-You can use the [editor on GitHub](https://github.com/psexton/troutslap/edit/gh-pages/index.md) to maintain and preview the content for your website in Markdown files.
+Enterprise-grade conflict resolution.
 
-Whenever you commit to this repository, GitHub Pages will run [Jekyll](https://jekyllrb.com/) to rebuild the pages in your site, from the content in your Markdown files.
+[![Add to Slack](https://platform.slack-edge.com/img/add_to_slack.png)](https://troutslap.psexton.net/install)
 
-### Markdown
+### Examples
 
-Markdown is a lightweight and easy-to-use syntax for styling your writing. It includes conventions for
+@TODO
 
-```markdown
-Syntax highlighted code block
+### Support
 
-# Header 1
-## Header 2
-### Header 3
+Bugs are tracked using GitHub Issues. Check the [list of known bugs](https://github.com/psexton/troutslap/issues?q=is%3Aissue+is%3Aopen+label%3Abug), and if you don't see your problem, [submit a new issue](https://github.com/psexton/troutslap/issues/new).
 
-- Bulleted
-- List
+### Privacy Policy
 
-1. Numbered
-2. List
+Usage info (outcome, length, number of participants) is tracked on a per-workspace basis. No user information is tracked or stored. Usage info is not shared.
 
-**Bold** and _Italic_ and `Code` text
+### Licensing
 
-[Link](url) and ![Image](src)
-```
+Code is licensend under the [GNU AGPLv3](https://choosealicense.com/licenses/agpl-3.0/), and available at [Github](https://github.com/psexton/troutslap). 
 
-For more details see [GitHub Flavored Markdown](https://guides.github.com/features/mastering-markdown/).
+### Image Credit
 
-### Jekyll Themes
-
-Your Pages site will use the layout and styles from the Jekyll theme you have selected in your [repository settings](https://github.com/psexton/troutslap/settings/pages). The name of this theme is saved in the Jekyll `_config.yml` configuration file.
-
-### Support or Contact
-
-Having trouble with Pages? Check out our [documentation](https://docs.github.com/categories/github-pages-basics/) or [contact support](https://support.github.com/contact) and we’ll help you sort it out.
+The trout slap icon "[troutslap bot avatar](avatar.jpg)", is a derivative of "[Yellowstone cutthroat trout](https://commons.wikimedia.org/wiki/File:Yellowstone_cutthroat_trout.jpg)" by [Waldemarpaetz](https://commons.wikimedia.org/w/index.php?title=User:Waldemarpaetz), used under [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/). "troutslap bot avatar" is licensed under [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/) by Paul Sexton.
