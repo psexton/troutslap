@@ -2,7 +2,7 @@
 
 ## Examples
 
-@TODO
+![screenshot of paul and clippy slapping each other](example.png)
 
 ## Support
 
