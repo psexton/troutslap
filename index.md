@@ -14,7 +14,7 @@ Usage info (outcome, length, number of participants) is tracked on a per-workspa
 
 ## Licensing
 
-Code is licensend under the [GNU AGPLv3](https://choosealicense.com/licenses/agpl-3.0/), and available at [Github](https://github.com/psexton/troutslap). 
+Code is licensend under the [GNU AGPLv3](https://choosealicense.com/licenses/agpl-3.0/), and available at [GitHub](https://github.com/psexton/troutslap). 
 
 ## Image Credit
 
