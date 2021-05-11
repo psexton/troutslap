@@ -1,4 +1,4 @@
-[![Add to Slack](https://platform.slack-edge.com/img/add_to_slack.png)](https://troutslap.psexton.net/install)
+[![Add to Slack](https://platform.slack-edge.com/img/add_to_slack.png)](https://troutslap-api.psexton.net/install)
 
 ## Examples
 
@@ -14,7 +14,7 @@ Usage info (outcome, length, number of participants) is tracked on a per-workspa
 
 ## Licensing
 
-Code is licensend under the [GNU AGPLv3](https://choosealicense.com/licenses/agpl-3.0/), and available at [GitHub](https://github.com/psexton/troutslap). 
+Code is licensed under the [GNU AGPLv3](https://choosealicense.com/licenses/agpl-3.0/), and available at [GitHub](https://github.com/psexton/troutslap). 
 
 ## Image Credit
 
