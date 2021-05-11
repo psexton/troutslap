@@ -6,7 +6,7 @@
 
 ## Support
 
-Bugs are tracked using GitHub Issues. Check the [list of known bugs](https://github.com/psexton/troutslap/issues?q=is%3Aissue+is%3Aopen+label%3Abug), and if you don't see your problem, [submit a new issue](https://github.com/psexton/troutslap/issues/new).
+Bugs are tracked using GitHub Issues. Check the [list of known bugs](https://github.com/psexton/troutslap/issues?q=is%3Aissue+is%3Aopen+label%3Abug), and if you don't see your problem, [submit a new issue](https://github.com/psexton/troutslap/issues/new). If you don't have a GitHub account, you can send emails to `troutslap at psexton dot net`.
 
 ## Privacy Policy
 
