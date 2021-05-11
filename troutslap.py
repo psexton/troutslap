@@ -75,9 +75,11 @@ def slap():
         logging.warning("event=hook status=fail invalid request")
         abort(400)
 
+    team_id = data['team_id']
+
     # Check for help invocation
     if data['text'] == "help":
-        logging.info("event=hook status=success type=help")
+        logging.info(f"event=hook status=success team_id={team_id} type=help")
         return jsonify(
             response_type="ephemeral",
             text="@ mention one or more other users or bots to engage them in combat.\n"
@@ -86,7 +88,7 @@ def slap():
     # Check if the user used @here, @channel, or @everyone
     # Chastise them and suppress the @-ing from the channel
     elif mass_at_mention(data['text']):
-        logging.info("event=hook status=success type=mass")
+        logging.info(f"event=hook status=success team_id={team_id} type=mass")
         return jsonify(
             response_type="ephemeral",
             text="You don't stand a chance fighting that many people."
@@ -100,7 +102,7 @@ def slap():
 
         if len(involved) == 1:
             # if they're alone, handle that special case too
-            logging.info("event=hook status=success type=self")
+            logging.info(f"event=hook status=success team_id={team_id} type=self")
             return jsonify(
                 response_type='ephemeral',
                 text="No one else is around. You slap yourself. The fish wins."
@@ -172,7 +174,7 @@ def give_em_the_slaps(team_id, channel_id, initiator, players):
 
     # Get the content we'll be using
     messages = write_messages(initiator, players)
-    logging.info(f"event=hook status=success type=normal length={len(messages)} players={len(players)}")
+    logging.info(f"event=hook status=success team_id={team_id} type=normal length={len(messages)} players={len(players)}")
 
     # Look up the token for this team
     oauth_token = load_token(team_id)
