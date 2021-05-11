@@ -51,15 +51,18 @@ def authorize():
     response = requests.post('https://slack.com/api/oauth.v2.access', data=form_data)
     response_body = json.loads(response.text)
     if response_body["ok"]:
+
         # if successful, store in DB and return happy response
         team_id = response_body["team"]["id"]
         team_name = response_body["team"]["name"]
         token = response_body["access_token"]
         store_token(team_id, team_name, token)
-        return jsonify(status='OK', team_id=team_id, team_name=team_name)
+        logger.info(f"event=install status=success team_id={team_id}")
+        return f"Successfully installed to {team_name}!"
     else:
         # if not successful, return unhappy response
-        return response_body, response.status_code
+        logger.error(f"event=install status=fail slack response={response}")
+        return "Installation failed", response.status_code
 
 
 @app.route('/hook', methods=['POST'])
@@ -69,20 +72,21 @@ def slap():
     logging.debug(f"data={data}")
     if not is_request_valid(body=raw_body, timestamp=request.headers['X-Slack-Request-Timestamp'],
                             signature=request.headers['X-Slack-Signature']):
-        logging.warning('invalid request')
+        logging.warning("event=hook status=fail invalid request")
         abort(400)
 
     # Check for help invocation
     if data['text'] == "help":
-        logging.info("help requested")
+        logging.info("event=hook status=success type=help")
         return jsonify(
             response_type="ephemeral",
-            text="@ mention one or more other users or bots to engage them in combat.\nExample usages: `/slap @larry`, `/slap @curly @moe`"
+            text="@ mention one or more other users or bots to engage them in combat.\n"
+                 "Example usages: `/slap @larry`, `/slap @curly @moe` "
         )
     # Check if the user used @here, @channel, or @everyone
     # Chastise them and suppress the @-ing from the channel
     elif mass_at_mention(data['text']):
-        logging.info("mass slap attempted")
+        logging.info("event=hook status=success type=mass")
         return jsonify(
             response_type="ephemeral",
             text="You don't stand a chance fighting that many people."
@@ -96,14 +100,14 @@ def slap():
 
         if len(involved) == 1:
             # if they're alone, handle that special case too
-            logging.info("self slap attempted")
+            logging.info("event=hook status=success type=self")
             return jsonify(
                 response_type='ephemeral',
                 text="No one else is around. You slap yourself. The fish wins."
             )
         else:
             # otherwise, handle the normal case
-            logging.info("queuing normal slap")
+            logging.debug("queuing normal slap")
             give_em_the_slaps(data['team_id'], data['channel_id'], initiator, involved)
 
             # return immediately with empty response
@@ -168,6 +172,7 @@ def give_em_the_slaps(team_id, channel_id, initiator, players):
 
     # Get the content we'll be using
     messages = write_messages(initiator, players)
+    logging.info(f"event=hook status=success type=normal length={len(messages)} players={len(players)}")
 
     # Look up the token for this team
     oauth_token = load_token(team_id)
