@@ -22,4 +22,9 @@ The trout slap icon "[troutslap bot avatar](https://github.com/psexton/troutslap
 
 ## Terms of Service
 
-This app is provided "as is", and warranties of any kind are expressly disclaimed. By using this app you agree to indemnify the creators from any liability relating to your usage. No guarantees of service uptime or functionality are provided, and usage of the app may be terminated at any time.
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+[GNU Affero General Public License](https://raw.githubusercontent.com/psexton/troutslap/main/LICENSE) for more details.
+
+Additionally, for the version of this program hosted at https://troutslap.psexton.net/, no guarantees of service uptime or functionality are provided, and may be discontinued at any time.
