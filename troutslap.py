@@ -87,17 +87,17 @@ def authorize():
 def slap():
     raw_body = request.get_data()
     data = request.form
-    logging.debug(f"data={data}")
+    logger.debug(f"data={data}")
     if not is_request_valid(body=raw_body, timestamp=request.headers['X-Slack-Request-Timestamp'],
                             signature=request.headers['X-Slack-Signature']):
-        logging.warning("event=hook status=fail invalid request")
+        logger.warning("event=hook status=fail invalid request")
         abort(400)
 
     team_id = data['team_id']
 
     # Check for help invocation
     if data['text'] == "help":
-        logging.info(f"event=hook status=success team_id={team_id} type=help")
+        logger.info(f"event=hook status=success team_id={team_id} type=help")
         return jsonify(
             response_type="ephemeral",
             text="@ mention one or more other users or bots to engage them in combat.\n"
@@ -106,7 +106,7 @@ def slap():
     # Check if the user used @here, @channel, or @everyone
     # Chastise them and suppress the @-ing from the channel
     elif mass_at_mention(data['text']):
-        logging.info(f"event=hook status=success team_id={team_id} type=mass")
+        logger.info(f"event=hook status=success team_id={team_id} type=mass")
         return jsonify(
             response_type="ephemeral",
             text="You don't stand a chance fighting that many people."
@@ -115,19 +115,19 @@ def slap():
         # parse out who slapped and who is getting slapped
         initiator = data['user_id']
         involved = involved_users(data)
-        logging.debug(f"initiator={initiator}")
-        logging.debug(f"involved={involved}")
+        logger.debug(f"initiator={initiator}")
+        logger.debug(f"involved={involved}")
 
         if len(involved) == 1:
             # if they're alone, handle that special case too
-            logging.info(f"event=hook status=success team_id={team_id} type=self")
+            logger.info(f"event=hook status=success team_id={team_id} type=self")
             return jsonify(
                 response_type='ephemeral',
                 text="No one else is around. You slap yourself. The fish wins."
             )
         else:
             # otherwise, handle the normal case
-            logging.debug("queuing normal slap")
+            logger.debug("queuing normal slap")
             give_em_the_slaps(data['team_id'], data['channel_id'], initiator, involved)
 
             # return immediately with empty response
@@ -192,7 +192,7 @@ def give_em_the_slaps(team_id, channel_id, initiator, players):
 
     # Get the content we'll be using
     messages = write_messages(initiator, players)
-    logging.info(f"event=hook status=success team_id={team_id} type=normal length={len(messages)} players={len(players)}")
+    logger.info(f"event=hook status=success team_id={team_id} type=normal length={len(messages)} players={len(players)}")
 
     # Look up the token for this team
     oauth_token = load_token(team_id)
@@ -200,11 +200,11 @@ def give_em_the_slaps(team_id, channel_id, initiator, players):
     # Send the content to slack
     for message in messages:
         response = {'channel': channel_id, 'text': message}
-        logging.debug(f"posting {response['text']}")
+        logger.debug(f"posting {response['text']}")
         response = requests.post("https://slack.com/api/chat.postMessage",
                                  json=response,
                                  headers={'Authorization': f"Bearer {oauth_token}"})
-        logging.debug(f"response.status_code={response.status_code}")
+        logger.debug(f"response.status_code={response.status_code}")
         if not DEBUG_MODE:
             sleep(PAUSE_DURATION)
 
@@ -241,7 +241,7 @@ def encode_name(user_id):
 
 # write a team's auth info out to dynamodb
 def store_token(team_id, team_name, token) -> None:
-    logging.debug(f"storing token for team_id={team_id}, team_name={team_name}")
+    logger.debug(f"storing token for team_id={team_id}, team_name={team_name}")
     # this will add a new item or overwrite an existing item
     installations.put_item(
         Item={
